@@ -14,7 +14,7 @@ void main() {
   late String url;
 
   setUpAll(() async {
-    url = ApiUrls.stockScanParserBaseUrl; // Replace with your actual API URL
+    url = ApiUrls.stockScanParserBaseUrl;
     registerFallbackValue(Uri.parse(url));
     mockHttpClient = MockHttpClient();
     stockScanHttpClient =
@@ -29,7 +29,6 @@ void main() {
     });
     final jsonResponse = response.body;
 
-    // Mock the HTTP client to return the actual API response
     when(() => mockHttpClient.get(any(), headers: any(named: 'headers')))
         .thenAnswer((_) async => http.Response(jsonResponse, 200));
   });
