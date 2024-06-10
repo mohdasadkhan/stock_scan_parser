@@ -37,18 +37,14 @@ class StockDetailScreen extends StatelessWidget {
                 itemCount: stockScan.criteria.length,
                 itemBuilder: (ctx, i) {
                   final Criteria criteria = stockScan.criteria[i];
-                  // if (criteria.type.name == CriteriaType.plainText.name) {
-                  //   return ListTile(
-                  //     title: Text(criteria.text),
-                  //   );
-                  // }
                   return ListTile(
                     title: RichText(
                       text: TextSpan(
-                        children: _parseText(criteria.text, (String variable) {
-                          if (criteria.variable!.containsKey(variable)) {
+                        children: _parseText(criteria.text, criteria.variable,
+                            (String value) {
+                          if (criteria.variable!.containsKey(value)) {
                             context.pushNamed(RoutesName.stockParams,
-                                extra: criteria.variable![variable]);
+                                extra: criteria.variable![value]);
                           }
                         }),
                         style: const TextStyle(color: Colors.black),
@@ -64,20 +60,30 @@ class StockDetailScreen extends StatelessWidget {
     );
   }
 
-  List<TextSpan> _parseText(String text, Function callback) {
+  List<TextSpan> _parseText(
+      String text, Map<String, VariableDetail>? variable, Function callback) {
     final regex = RegExp(r'\$\d+');
     final matches = regex.allMatches(text);
     final List<TextSpan> spans = [];
     int start = 0;
-
     for (final match in matches) {
       if (match.start > start) {
         spans.add(TextSpan(text: text.substring(start, match.start)));
       }
-      final clickableText = text.substring(match.start, match.end);
+      String clickableText = text.substring(match.start, match.end);
+      String updatedText = clickableText;
+
+      if (variable!.containsKey(clickableText)) {
+        if (variable[clickableText]!.type == 'indicator') {
+          updatedText = variable[clickableText]!.defaultValue.toString();
+        } else {
+          updatedText = variable[clickableText]!.values![0].toString();
+        }
+        updatedText = '($updatedText)';
+      }
       spans.add(
         TextSpan(
-          text: clickableText,
+          text: updatedText,
           style: const TextStyle(color: Colors.blue),
           recognizer: TapGestureRecognizer()
             ..onTap = () {
